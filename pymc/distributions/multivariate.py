@@ -133,6 +133,9 @@ def quaddist_matrix(cov=None, chol=None, tau=None, lower=True, *args, **kwargs):
         chol = pt.as_tensor_variable(chol)
         if chol.ndim != 2:
             raise ValueError("chol must be two dimensional.")
+
+        # TODO: check that chol is lower triangular
+        chol.tag.lower_triangular = True
         cov = chol.dot(chol.T)
 
     return cov
