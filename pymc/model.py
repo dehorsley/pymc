@@ -381,6 +381,21 @@ class ValueGradFunction:
             self._extra_vars_shared[var.name] = shared
             givens.append((var, shared))
 
+        inputs = grad_vars
+        fgraph = FunctionGraph(inputs=inputs, outputs=[cost], clone=False)
+
+        opt = pytensor.compile.optdb.query(pytensor.compile.predefined_optimizers['stabilize'])
+
+        print("Before: \n\n\n")
+        pytensor.dprint(cost)
+
+        print("After: \n\n\n")
+        opt.rewrite(fgraph)
+
+        cost = fgraph.outputs[0]
+        #inputs = fgraph.inputs
+        pytensor.dprint(cost)
+
         if compute_grads:
             grads = pytensor.grad(cost, grad_vars, disconnected_inputs="ignore")
             for grad_wrt, var in zip(grads, grad_vars):
@@ -388,8 +403,6 @@ class ValueGradFunction:
             outputs = [cost] + grads
         else:
             outputs = [cost]
-
-        inputs = grad_vars
 
         self._pytensor_function = compile_pymc(inputs, outputs, givens=givens, **kwargs)
 
